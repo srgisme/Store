@@ -1,8 +1,8 @@
 import Foundation
 import Combine
 
-public typealias StateChange<State, Environment> = AnyPublisher<(inout State) -> Void, Never>
-public typealias Reducer<State, Environment> = (Action, Environment) -> StateChange<State, Environment>
+public typealias StateChange<State> = AnyPublisher<(inout State) -> Void, Never>
+public typealias Reducer<State, Environment> = (Action, Environment) -> StateChange<State>
 
 public final class Store<State, Environment>: ObservableObject {
     @Published public private(set) var state: State
@@ -28,7 +28,7 @@ public final class Store<State, Environment>: ObservableObject {
             .store(in: &stateChangeCancellables)
     }
 
-    private func serializedStateChanges(_ actions: [Action]) -> StateChange<State, Environment> {
+    private func serializedStateChanges(_ actions: [Action]) -> StateChange<State> {
         let normalizedActions = actions.normalized
         guard let firstAction = normalizedActions.first else {
             return Empty(completeImmediately: true)
