@@ -37,4 +37,16 @@ public final class Store<State, Environment>: ObservableObject {
 
         return normalizedActions.dropFirst().reduce(into: reducer(firstAction, environment)) { [unowned self] in $0 = $0.append(self.reducer($1, self.environment)).eraseToAnyPublisher() }
     }
+
+    public var actionDispatcher: ActionDispatcher {
+        .init { [weak self] in self?.send($0) }
+    }
+}
+
+public final class ActionDispatcher: ObservableObject {
+    public let send: (_ action: Action) -> Void
+
+    public init(send: @escaping (_ action: Action) -> Void) {
+        self.send = send
+    }
 }

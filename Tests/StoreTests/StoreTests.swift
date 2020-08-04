@@ -2,6 +2,20 @@ import XCTest
 @testable import Store
 
 final class StoreTests: XCTestCase {
+    func testActionDispatcher() {
+        let store = Store<AppState, TestEnvironment>(initialState: .init(), reducer: appReducer, environment: .init())
+        let expectation = XCTestExpectation()
+        let cancellable = store.$state
+            .dropFirst()
+            .map(\.counterState.counter)
+            .sink {
+                XCTAssertEqual($0, 1)
+                expectation.fulfill()
+            }
+        store.actionDispatcher.send(CounterAction.increase)
+        wait(for: [expectation], timeout: 5)
+        cancellable.cancel()
+    }
     func testCounterReducer() {
         let store = Store<AppState, TestEnvironment>(initialState: .init(), reducer: appReducer, environment: .init())
         let expectation = XCTestExpectation()
