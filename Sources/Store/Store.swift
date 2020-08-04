@@ -9,7 +9,7 @@ public final class Store<State, Environment>: ObservableObject {
 
     private let environment: Environment
     private let reducer: Reducer<State, Environment>
-    private var actionCancellables: Set<AnyCancellable> = []
+    private var stateChangeCancellables: Set<AnyCancellable> = []
 
     public init(initialState: State, reducer: @escaping Reducer<State, Environment>, environment: Environment) {
         self.state = initialState
@@ -25,7 +25,7 @@ public final class Store<State, Environment>: ObservableObject {
         serializedStateChanges(actions.normalized)
             .receive(on: DispatchQueue.main)
             .sink { [unowned self] in $0(&self.state) }
-            .store(in: &actionCancellables)
+            .store(in: &stateChangeCancellables)
     }
 
     private func serializedStateChanges(_ actions: [Action]) -> StateChange<State, Environment> {
