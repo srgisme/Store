@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 public typealias StateChange<State> = AnyPublisher<(inout State) -> Void, Never>
 public typealias Reducer<State, Environment> = (Action, Environment) -> StateChange<State>
@@ -17,14 +18,14 @@ public final class Store<State, Environment>: ObservableObject {
         self.environment = environment
     }
 
-    public func send(_ action: Action) {
-        send(action.normalized)
+    public func send(_ action: Action, _ animation: Animation = .default) {
+        send(action.normalized, animation)
     }
 
-    private func send(_ actions: [Action]) {
+    private func send(_ actions: [Action], _ animation: Animation = .default) {
         serializedStateChanges(actions.normalized)
             .receive(on: DispatchQueue.main)
-            .sink { [unowned self] in $0(&self.state) }
+            .sink { [unowned self] stateChange in withAnimation(animation) { stateChange(&self.state) } }
             .store(in: &stateChangeCancellables)
     }
 
@@ -39,14 +40,14 @@ public final class Store<State, Environment>: ObservableObject {
     }
 
     public var actionDispatcher: ActionDispatcher {
-        .init { [weak self] in self?.send($0) }
+        .init { [weak self] in self?.send($0, $1) }
     }
 }
 
 public final class ActionDispatcher: ObservableObject {
-    public let send: (_ action: Action) -> Void
+    public let send: (_ action: Action, _ animation: Animation) -> Void
 
-    public init(send: @escaping (_ action: Action) -> Void) {
+    public init(send: @escaping (_ action: Action, _ animation: Animation) -> Void) {
         self.send = send
     }
 }

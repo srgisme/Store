@@ -12,7 +12,7 @@ final class StoreTests: XCTestCase {
                 XCTAssertEqual($0, 1)
                 expectation.fulfill()
             }
-        store.actionDispatcher.send(CounterAction.increase)
+        store.actionDispatcher.send(CounterAction.increase, .default)
         wait(for: [expectation], timeout: 5)
         cancellable.cancel()
     }
